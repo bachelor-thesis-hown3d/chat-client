@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"github.com/bachelor-thesis-hown3d/chat-client/pkg/util"
 	"github.com/coreos/go-oidc"
 	"golang.org/x/oauth2"
+	"google.golang.org/grpc/metadata"
 	"gopkg.in/yaml.v2"
 )
 
@@ -77,11 +77,25 @@ func LoadTokenFromFile() (Token, error) {
 	return t, nil
 }
 
-func SafeTokenToConfig(t Token) error {
+// SafeTokenToFile will persist a token on filesystem
+func SafeTokenToFile(t Token) error {
 	fmt.Println("Saving OIDC Token to file")
 	return util.WriteYAML(t, util.TokenFile())
 }
 
+// LoadTokenIntoContext creates metadata for authentication to the apiServer with the token from filesystem
+// will return an error, if the Token could not be loaded
+func LoadTokenIntoContext(ctx context.Context) (context.Context, error) {
+	t, err := LoadTokenFromFile()
+	if err != nil {
+		return ctx, err
+	}
+
+	md := metadata.Pairs("authorization", "bearer "+t.IDToken)
+	return metadata.NewOutgoingContext(ctx, md), nil
+}
+
+// RefreshToken refreshes the token for a given Token
 func (c *Config) RefreshToken(t Token) (Token, error) {
 	tokenSource := c.OAuth2Config.TokenSource(oauth2.NoContext, t.OAuth2Token)
 	newToken, err := tokenSource.Token()
@@ -96,7 +110,6 @@ func (c *Config) RefreshToken(t Token) (Token, error) {
 	if newIDToken == t.IDToken {
 		return t, nil
 	}
-	log.Println("Saved new token:", newToken.AccessToken)
 	return Token{IDToken: newIDToken, OAuth2Token: newToken}, nil
 }
 

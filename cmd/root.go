@@ -21,12 +21,13 @@ import (
 
 	"github.com/spf13/cobra"
 
+	"github.com/bachelor-thesis-hown3d/chat-client/pkg/types"
 	"github.com/spf13/viper"
 )
 
 var (
-	cfgFile      string
-	APIServerURL string
+	cfgFile string
+	u       types.HttpURL
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -58,7 +59,7 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.cmd.yaml)")
-	rootCmd.PersistentFlags().StringVar(&APIServerURL, "api-server-url", "localhost:10000", "URL of the chat-api-server")
+	rootCmd.PersistentFlags().Var(types.NewHttpURL("http://localhost:10000", &u), "api-server-url", "URL of the chat-api-server")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

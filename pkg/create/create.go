@@ -1,3 +1,0 @@
-package create
-
-func Create()

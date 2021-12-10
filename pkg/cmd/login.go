@@ -1,4 +1,4 @@
-package login
+package cmd
 
 import (
 	"context"
@@ -72,7 +72,7 @@ func getNewToken(ctx context.Context, c *oauth.Config, redirect *url.URL) error 
 		case err := <-errChan:
 			return err
 		case token := <-s.TokenChan:
-			return oauth.SafeTokenToConfig(token)
+			return oauth.SafeTokenToFile(token)
 		}
 	}
 }
@@ -89,7 +89,7 @@ func useExistingToken(c *oauth.Config, t oauth.Token) error {
 		if err != nil {
 			return err
 		}
-		return oauth.SafeTokenToConfig(newToken)
+		return oauth.SafeTokenToFile(newToken)
 	}
 	return nil
 }
